@@ -5,7 +5,9 @@ module KeyCache
     attr_writer :redis
 
     def redis
-      @redis || raise(ArgumentError, "KeyCache.redis is not configured")
+      @redis ||
+        (Redis.current if defined?(Redis) && Redis.respond_to?(:current)) ||
+        raise(ArgumentError, "KeyCache.redis is not configured")
     end
 
     def configure
