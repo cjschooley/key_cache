@@ -61,7 +61,7 @@ module KeyCache
 
         class_eval <<-METHOD, __FILE__, __LINE__ + 1
           def #{method}
-            Redis.current.get(cache_key_decode("#{key}"))
+            KeyCache.redis.get(cache_key_decode("#{key}"))
           end
 
           def #{method}_key
@@ -73,13 +73,13 @@ module KeyCache
           end
 
           def save_#{method}
-            Redis.current.set(cache_key_decode("#{key}"), self.send("#{value.to_sym}"))
+            KeyCache.redis.set(cache_key_decode("#{key}"), self.send("#{value.to_sym}"))
           end
 
           #{"after_save :save_#{method}" if include_callbacks}
 
           def destroy_#{method}
-            Redis.current.del(cache_key_decode("#{key}"))
+            KeyCache.redis.del(cache_key_decode("#{key}"))
           end
 
           #{"after_destroy :destroy_#{method}" if include_callbacks}
@@ -98,7 +98,7 @@ module KeyCache
 
         class_eval <<-METHOD, __FILE__, __LINE__ + 1
           def #{method}
-            Redis.current.hget(cache_key_decode("#{key}"), self.send("#{field}"))
+            KeyCache.redis.hget(cache_key_decode("#{key}"), self.send("#{field}"))
           end
 
           def #{method}_key
@@ -106,15 +106,15 @@ module KeyCache
           end
 
           def #{method}_keys
-            Redis.current.hkeys(cache_key_decode("#{key}"))
+            KeyCache.redis.hkeys(cache_key_decode("#{key}"))
           end
 
           def #{method}_values
-            Redis.current.hvals(cache_key_decode("#{key}"))
+            KeyCache.redis.hvals(cache_key_decode("#{key}"))
           end
 
           def #{method}_hash
-            Redis.current.hgetall(cache_key_decode("#{key}"))
+            KeyCache.redis.hgetall(cache_key_decode("#{key}"))
           end
 
           def #{method}_redis_key
@@ -123,14 +123,14 @@ module KeyCache
 
           def save_#{method}
             return if #{soft_deletion} && self.deleted_at.present?
-            Redis.current.hset(cache_key_decode("#{key}"), self.send("#{field}"), self.send("#{value.to_sym}"))
+            KeyCache.redis.hset(cache_key_decode("#{key}"), self.send("#{field}"), self.send("#{value.to_sym}"))
           end
 
           #{"after_save :save_#{method}" if include_callbacks}
 
           def destroy_#{method}
             return if #{soft_deletion} && self.deleted_at.nil?
-            Redis.current.hdel(cache_key_decode("#{key}"), self.send("#{field}"))
+            KeyCache.redis.hdel(cache_key_decode("#{key}"), self.send("#{field}"))
           end
 
           #{"after_destroy :destroy_#{method}" if include_callbacks}
